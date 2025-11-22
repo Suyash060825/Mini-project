@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  # 1. Ollama Service (Local LLM)
+  # Uses 'host' network mode so the backend container can reach it via host.docker.internal
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama-1
+    network_mode: host
+    tty: true
+    restart: always
+    volumes:
+      - ollama_data:/root/.ollama
+    # Ensures Ollama starts the server process
+    command: serve
+
+  # 2. Python Backend (FastAPI, Whisper, LLM Orchestrator)
+  backend:
+    build:
+      context: .
+      # Use the specific Dockerfile we created
+      dockerfile: Dockerfile.backend
+    container_name: backend-1
+    # Load all environment variables (like OPENAI_API_KEY, OLLAMA_URL) from the root .env file
+    env_file:
+      - ./.env
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount the backend source code
+      - ./backend:/app
+      # Volume for temporary media files used during processing
+      - backend_temp_data:/mnt/data
+    # Ensures Ollama is started before attempting to run the backend
+    depends_on:
+      - ollama
+    # Allows backend to resolve 'host.docker.internal' to the host machine (where Ollama runs)
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: always
+
+  # 3. Frontend Service (React/Vite)
+  frontend:
+    build:
+      context: .
+      # Use the specific Dockerfile we created for the frontend
+      dockerfile: frontend/Dockerfile
+    container_name: frontend-1
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount the frontend source code
+      - ./frontend:/app
+      # Named volume for node_modules to ensure correct dependency installation across environments
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    restart: always
+
+volumes:
+  ollama_data:
+  backend_temp_data:
+  frontend_node_modules:

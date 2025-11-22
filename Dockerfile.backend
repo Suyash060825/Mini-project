@@ -1,0 +1,32 @@
+# Base image for Python backend
+FROM python:3.11-slim
+
+# Install system dependencies (FFmpeg for Whisper/yt-dlp, Git for Whisper, and other necessary tools)
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Install Python dependencies from requirements.txt (including FastAPI, yt-dlp, etc.)
+# We use --no-cache-dir to minimize the image size
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Whisper directly from Git for the latest version and fixes, ensuring stability.
+RUN pip install --no-cache-dir 'git+https://github.com/openai/whisper.git'
+
+# Set necessary environment variables (will be overridden by docker-compose)
+
+ENV OLLAMA_HOST="http://host.docker.internal:11434"
+ENV OLLAMA_MODEL="mistral"
+
+# Copy the rest of the application code
+COPY backend .
+
+EXPOSE 8000
+
+# Command to run the Uvicorn server (FastAPI application)
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
