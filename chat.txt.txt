@@ -1,0 +1,78 @@
+Perfect! Here’s a **mini “start after shutdown” guide** for your Windows setup. You can follow this **every time you restart your laptop** — takes less than a minute.
+
+---
+
+## 🟢 Step 0: Open Command Prompt
+
+---
+
+## 🟢 Step 1: Go to your project folder
+
+```cmd
+cd C:\Users\suyas\video-qa-bot
+```
+
+---
+
+## 🟢 Step 2: Activate your virtual environment
+
+```cmd
+venv\Scripts\activate
+```
+
+* You should see `(venv)` in your prompt.
+* This ensures Python uses the correct packages you installed earlier.
+
+---
+
+## 🟢 Step 3: Make sure your API key is available
+
+If you already have `.env` with `OPENAI_API_KEY` and are using `python-dotenv` in `chatbot.py`, you **don’t need to do anything**.
+
+Otherwise, temporarily set it for this session:
+
+```cmd
+set OPENAI_API_KEY=sk-your-real-api-key-here
+```
+
+💡 **Tip:** To avoid this every time, you can permanently set it:
+
+```cmd
+setx OPENAI_API_KEY "sk-your-real-api-key-here"
+```
+
+---
+
+## 🟢 Step 4: Run your chatbot
+
+### Streamlit UI:
+
+```cmd
+streamlit run ui.py
+```
+
+### FastAPI backend (optional):
+
+```cmd
+uvicorn app:app --reload
+```
+
+---
+
+## 🟢 Step 5: Add new data (optional)
+
+If you add new text files or transcripts to `data/`, rebuild the knowledge base:
+
+```cmd
+python ingest.py
+```
+
+---
+
+✅ That’s it! After this, your chatbot is fully functional without reinstalling anything.
+
+---
+
+If you want, I can also make a **one-page cheat sheet** with **all the most common commands for your project** — from setup, ingestion, running chatbot, to deploying — so you never get stuck again.
+
+Do you want me to make that cheat sheet?
